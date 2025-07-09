@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/home/godine/Projects/raylib/learning/build",
-  "command": "/usr/bin/c++   -I/usr/include -o CMakeFiles/learning_main.dir/src/main.cpp.o -c /home/godine/Projects/raylib/learning/src/main.cpp",
-  "file": "/home/godine/Projects/raylib/learning/src/main.cpp",
-  "output": "CMakeFiles/learning_main.dir/src/main.cpp.o"
-}
-]

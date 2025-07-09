@@ -1,3 +1,0 @@
-/home/godine/Projects/raylib/learning/build/CMakeFiles/learning_main.dir
-/home/godine/Projects/raylib/learning/build/CMakeFiles/edit_cache.dir
-/home/godine/Projects/raylib/learning/build/CMakeFiles/rebuild_cache.dir

@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/learning_main.dir/link.d CMakeFiles/learning_main.dir/src/main.cpp.o -o learning_main  /usr/local/lib/libraylib.a -L/usr/lib -lraylib
