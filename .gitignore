@@ -1,0 +1,27 @@
+# CMake build directories
+build/
+cmake-build-*/
+out/
+bin/
+obj/
+
+# CMake temporary files and caches
+*.cmake.in
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+compile_commands.json
+
+# IDE specific files (e.g., for CLion, Visual Studio)
+.idea/
+.vs/
+*.vcxproj*
+*.sln
+*.user
+*.suo
+
+# Operating System specific files
+.DS_Store
+Thumbs.db
