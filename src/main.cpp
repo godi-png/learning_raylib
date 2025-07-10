@@ -9,7 +9,7 @@ int main(void){
 	const int screenHeight = 450;
 	const int target_fps = 60;
 
-	InitWindow(screenWidth, screenHeight, "pene");
+	InitWindow(screenWidth, screenHeight, "Testing");
 
 	SetTargetFPS(target_fps);
 
