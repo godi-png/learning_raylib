@@ -15,8 +15,9 @@ int main(void){
 
 	while(!WindowShouldClose()){
 		BeginDrawing();
-		ClearBackground(RAYWHITE);
-		DrawText("My First Window", 190, 200, 20, LIGHTGRAY);
+		ClearBackground(BLACK);
+		DrawRectangle(screenWidth/2, screenHeight/2,screenWidth/4,screenHeight/4,WHITE);
+		DrawText("Job application",screenWidth/2, screenHeight/2,5,BLACK);
 	EndDrawing();
 	}
 
