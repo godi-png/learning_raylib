@@ -21,7 +21,7 @@ int main(void){
 	float playerX_start = 100;//screenWidth/2.0f;
 	float playerY_start = 100;//screenHeight/2.0f;
 
-	Rectangle player = {playerX_start, playerY_start, playerSize};
+	Rectangle player = {playerX_start, playerY_start, playerSize, playerSize};
 
 	// player camera init
 	Camera2D pcam = {0};
