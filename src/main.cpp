@@ -15,17 +15,21 @@ int main(void){
 
 	// fps init
 	SetTargetFPS(target_fps);
+
+	// ground init
+	const float groundY = 350.0f;
 	
 	// player init
-	const int playerSize = 100;
-	float playerX_start = 100;//screenWidth/2.0f;
-	float playerY_start = 100;//screenHeight/2.0f;
+	const int playerSize = 50;
+	float playerX_start = screenWidth/2.0f;
+	float playerY_start = groundY - playerSize;
+	const int playerSpeed = 10;
 
 	Rectangle player = {playerX_start, playerY_start, playerSize, playerSize};
 
 	// player camera init
 	Camera2D pcam = {0};
-	pcam.target = (Vector2){player.x + 20.0f, player.y + 20.0f};
+	pcam.target = (Vector2){player.x + player.width/2.0f, player.y + player.height/2.0f};
 	pcam.offset = (Vector2){screenWidth/2.0f, screenHeight/2.0f};
 	pcam.rotation = 0.0f;
 	pcam.zoom = 1.0f;
@@ -33,19 +37,27 @@ int main(void){
 	// main game loop
 	while(!WindowShouldClose()){
 		// player horizontal movment
-		if(IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) player.x += 4;
-		else if(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) player.x -= 4;
+		if(IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) player.x += playerSpeed;
+		else if(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) player.x -= playerSpeed;
+
+		// follow player
+		//pcam.target = (Vector2){player.x + player.width/2.0f, player.y + player.height/2.0f};
 
 		// rendering
 		BeginDrawing();
 			// background render
 			ClearBackground(RAYWHITE);
-			DrawRectangle(0, screenHeight-(screenHeight/2.0f), screenWidth, screenHeight, DARKGREEN);
+
+			// render player coords
+			DrawTextEx(GetFontDefault(), TextFormat("Player Coords: [%.0f, %.0f]", player.x, player.y), (Vector2){10, 10}, 20, 2, BLACK);
+			// render fps
+			DrawTextEx(GetFontDefault(), TextFormat("FPS: %i", GetFPS()), (Vector2){10, 40}, 20, 2, BLACK);
 			BeginMode2D(pcam);
+				// ground drawn
+				DrawRectangle(0, groundY, screenWidth * 5, screenHeight, DARKGREEN);
+
 				// player render
 				DrawRectangleRec(player, BLUE);
-				std::cout << "Player x: " << player.x << std::endl;
-				std::cout << "Player y: " << player.y << std::endl;
 			EndMode2D();
 		EndDrawing();
 	}
