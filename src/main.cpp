@@ -17,19 +17,28 @@ int main(void){
 	SetTargetFPS(target_fps);
 
 	// world params
-	const int gravity = -10;
+	const float gravity = 1.f;
+	float playerY_vel = 0.0f;
 
 	// ground init
+	const float groundX = 0.0f;
 	const float groundY = 350.0f;
-	const int groundWidth = screenWidth * 5;
+	const float groundWidth = screenWidth * 5;
+	const float groundHeight = screenHeight;
+	
+	const Rectangle ground1 = {groundX, groundY, groundWidth, groundHeight};
 	
 	// player init
 	const int playerSize = 50;
 	float playerX_start = screenWidth/2.0f;
-	float playerY_start = groundY - playerSize;
+	float playerY_start = ground1.y - playerSize;
 	const int playerSpeed = 10;
+	const float jumpStrength = -15.0f;
 
 	Rectangle player = {playerX_start, playerY_start, playerSize, playerSize};
+
+	// player states
+	bool onGround = false;
 
 	// player camera init
 	Camera2D pcam = {0};
@@ -40,14 +49,34 @@ int main(void){
 
 	// main game loop
 	while(!WindowShouldClose()){
+		// restart player position
+		if(IsKeyPressed(KEY_R)){
+			player.x = playerX_start;
+			player.y = playerY_start;
+		}
+
 		// player gravity
-		if(player.x <= -playerSize || player.x >= groundWidth + playerSize) player.y -= gravity;
+		if(!onGround) playerY_vel += gravity;
+		player.y += playerY_vel;
 
 		// player horizontal movement
 		if(IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) player.x += playerSpeed;
 		else if(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) player.x -= playerSpeed;
 
 		// player jump
+		if(onGround && IsKeyPressed(KEY_SPACE)){
+			playerY_vel = jumpStrength;
+			onGround = false;
+		}
+
+		// collision check
+		if(CheckCollisionRecs(player, ground1)){
+			player.y = ground1.y - player.height;
+			playerY_vel = 0.0f;
+			onGround = true;
+		} else{
+			onGround = false;
+		}
 
 		// follow player
 		pcam.target = (Vector2){player.x + player.width/2.0f, player.y + player.height/2.0f};
@@ -63,7 +92,7 @@ int main(void){
 			DrawTextEx(GetFontDefault(), TextFormat("FPS: %i", GetFPS()), (Vector2){10, 40}, 20, 2, BLACK);
 			BeginMode2D(pcam);
 				// ground drawn
-				DrawRectangle(0, groundY, groundWidth, screenHeight, DARKGREEN);
+				DrawRectangleRec(ground1, DARKGREEN);
 
 				// player render
 				DrawRectangleRec(player, BLUE);
