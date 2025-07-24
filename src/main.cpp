@@ -11,13 +11,17 @@ int main(void){
 	const int screenHeight = 450;
 	const int target_fps = 60;
 
-	InitWindow(screenWidth, screenHeight, "pene");
+	InitWindow(screenWidth, screenHeight, "nepe");
 
 	// fps init
 	SetTargetFPS(target_fps);
 
+	// world params
+	const int gravity = -10;
+
 	// ground init
 	const float groundY = 350.0f;
+	const int groundWidth = screenWidth * 5;
 	
 	// player init
 	const int playerSize = 50;
@@ -36,12 +40,17 @@ int main(void){
 
 	// main game loop
 	while(!WindowShouldClose()){
-		// player horizontal movment
+		// player gravity
+		if(player.x <= -playerSize || player.x >= groundWidth + playerSize) player.y -= gravity;
+
+		// player horizontal movement
 		if(IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) player.x += playerSpeed;
 		else if(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) player.x -= playerSpeed;
 
+		// player jump
+
 		// follow player
-		//pcam.target = (Vector2){player.x + player.width/2.0f, player.y + player.height/2.0f};
+		pcam.target = (Vector2){player.x + player.width/2.0f, player.y + player.height/2.0f};
 
 		// rendering
 		BeginDrawing();
@@ -54,7 +63,7 @@ int main(void){
 			DrawTextEx(GetFontDefault(), TextFormat("FPS: %i", GetFPS()), (Vector2){10, 40}, 20, 2, BLACK);
 			BeginMode2D(pcam);
 				// ground drawn
-				DrawRectangle(0, groundY, screenWidth * 5, screenHeight, DARKGREEN);
+				DrawRectangle(0, groundY, groundWidth, screenHeight, DARKGREEN);
 
 				// player render
 				DrawRectangleRec(player, BLUE);
