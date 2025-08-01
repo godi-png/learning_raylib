@@ -42,8 +42,18 @@ int main(void){
 
 	// player camera init
 	Camera2D pcam = {0};
-	pcam.target = (Vector2){player.x + player.width/2.0f, player.y + player.height/2.0f};
-	pcam.offset = (Vector2){screenWidth/2.0f, screenHeight/2.0f};
+// center the camera on the player
+		pcam.target = Vector2{
+			player.x + player.width * 0.5f,
+			player.y + player.height * 0.5f
+		};
+
+		// offset the camera so the player appears in the middle of the screen
+		pcam.offset = Vector2{
+			screenWidth  * 0.5f,
+			screenHeight * 0.5f
+		};
+
 	pcam.rotation = 0.0f;
 	pcam.zoom = 1.0f;
 
@@ -78,8 +88,13 @@ int main(void){
 			onGround = false;
 		}
 
-		// follow player
-		pcam.target = (Vector2){player.x + player.width/2.0f, player.y + player.height/2.0f};
+		// follow player 
+
+		pcam.target = { 
+			player.x + player.width/2.0f, 
+			player.y + player.height/2.0f 
+		};
+
 
 		// rendering
 		BeginDrawing();
@@ -87,9 +102,26 @@ int main(void){
 			ClearBackground(RAYWHITE);
 
 			// render player coords
-			DrawTextEx(GetFontDefault(), TextFormat("Player Coords: [%.0f, %.0f]", player.x, player.y), (Vector2){10, 10}, 20, 2, BLACK);
-			// render fps
-			DrawTextEx(GetFontDefault(), TextFormat("FPS: %i", GetFPS()), (Vector2){10, 40}, 20, 2, BLACK);
+// Render player coordinates
+			DrawTextEx(
+				GetFontDefault(),
+				TextFormat("Player Coords: [%.0f, %.0f]", player.x, player.y),
+				Vector2{ 10.0f,  10.0f },
+				20.0f,
+				2.0f,
+				BLACK
+			);
+
+			// Render FPS
+			DrawTextEx(
+				GetFontDefault(),
+				TextFormat("FPS: %d", GetFPS()),
+				Vector2{ 10.0f,  40.0f },
+				20.0f,
+				2.0f,
+				BLACK
+			);
+
 			BeginMode2D(pcam);
 				// ground drawn
 				DrawRectangleRec(ground1, DARKGREEN);
