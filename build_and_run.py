@@ -13,7 +13,9 @@ PROJECT_ROOT = SCRIPT_DIR
 OS_SYSTEM = platform.system()
 if OS_SYSTEM == "Windows":
     try:
-        subprocess.run(["clear"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(
+            ["clear"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         CLEAR_CMD = "clear"
     except (subprocess.CalledProcessError, FileNotFoundError):
         CLEAR_CMD = "cls"
@@ -23,8 +25,10 @@ else:
     EXECUTABLE_EXT = ""
 
 BUILD_CONFIG = "Debug"
+DEBUG = True
 if len(sys.argv) > 1:
     BUILD_CONFIG = sys.argv[1]
+
 
 # helper function
 def run_command(command, cwd=None, check=True):
@@ -52,9 +56,14 @@ def run_command(command, cwd=None, check=True):
             print(f"Stdout: {e.stdout.decode()}")
         sys.exit(1)
     except FileNotFoundError:
-        print(f"Error: Command '{command[0] if isinstance(command, list) else command.split()[0]}' not found.")
-        print("Please ensure CMake and your compiler (g++/Visual Studio) are installed and in your system's PATH.")
+        print(
+            f"Error: Command '{command[0] if isinstance(command, list) else command.split()[0]}' not found."
+        )
+        print(
+            "Please ensure CMake and your compiler (g++/Visual Studio) are installed and in your system's PATH."
+        )
         sys.exit(1)
+
 
 # Build
 
@@ -69,7 +78,7 @@ build_path = os.path.join(PROJECT_ROOT, BUILD_DIR)
 print(f"Configuring CMake in '{build_path}'...")
 run_command(["cmake", "-S", PROJECT_ROOT, "-B", build_path])
 
-# Build 
+# Build
 # --build <build_dir>: Builds a CMake-generated project binary tree
 # --config <config>: Specifies the build configuration (e.g., Debug, Release)
 print("Building project...")
@@ -81,36 +90,35 @@ print("Build complete.")
 
 print("--- Running Executable ---")
 
-executable_paths_to_try = [
-    os.path.join(build_path, "bin", PROJECT_NAME + EXECUTABLE_EXT),
-    os.path.join(build_path, BUILD_CONFIG, "bin", PROJECT_NAME + EXECUTABLE_EXT),
-    os.path.join(build_path, PROJECT_NAME + EXECUTABLE_EXT)
-]
+if DEBUG:
+    executable_path = os.path.join(
+        build_path, "bin", BUILD_CONFIG, PROJECT_NAME + EXECUTABLE_EXT
+    )
+else:
+    executable_path = os.path.join(build_path, "bin", PROJECT_NAME + EXECUTABLE_EXT)
 
-found_executable_path = None
-for path in executable_paths_to_try:
-    if os.path.exists(path):
-        found_executable_path = path
-        break
-
-if found_executable_path:
-    print(f"Executing: {found_executable_path}")
+if executable_path:
+    print(f"Executing: {executable_path}")
     # On Linux/macOS, ensure the executable has execute permissions
     if OS_SYSTEM != "Windows":
-        os.chmod(found_executable_path, 0o755) # rwxr-xr-x
-    
+        os.chmod(executable_path, 0o755)  # rwxr-xr-x
+
     # For Windows, use os.startfile to run without blocking the script,
     # similar to 'START ""' in batch. For Linux/macOS, just run directly.
     if OS_SYSTEM == "Windows":
-        os.startfile(found_executable_path)
+        os.startfile(executable_path)
     else:
-        run_command([found_executable_path])
+        run_command([executable_path])
 else:
-    print(f"Error: Executable '{PROJECT_NAME}{EXECUTABLE_EXT}' not found at expected paths.")
-    print("Please ensure the project builds successfully and check your CMakeLists.txt for output path settings.")
+    print(
+        f"Error: Executable '{PROJECT_NAME}{EXECUTABLE_EXT}' not found at expected paths."
+    )
+    print(
+        "Please ensure the project builds successfully and check your CMakeLists.txt for output path settings."
+    )
     print("Tried paths:")
-    for path in executable_paths_to_try:
-        print(f"  - {path}")
+
+    print(f"  - {executable_path}")
     sys.exit(1)
 
 run_command([CLEAR_CMD])
