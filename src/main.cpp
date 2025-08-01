@@ -11,7 +11,9 @@ int main(void){
 	const int screenHeight = 450;
 	const int target_fps = 60;
 
+
 	InitWindow(screenWidth, screenHeight, "nepe");
+
 
 	// fps init
 	SetTargetFPS(target_fps);
@@ -83,6 +85,7 @@ int main(void){
 
 		// rendering
 		BeginDrawing();
+
 			// background render
 			ClearBackground(RAYWHITE);
 
@@ -98,6 +101,8 @@ int main(void){
 				DrawRectangleRec(player, BLUE);
 			EndMode2D();
 		EndDrawing();
+
+
 	}
 
 	CloseWindow();
