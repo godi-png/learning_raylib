@@ -14,6 +14,11 @@ int main(void) {
 
 
   InitWindow(screenWidth, screenHeight, "Testing");
+  InitAudioDevice();
+
+  Music epicMusic = LoadMusicStream("./assets/Megalovania.ogg");
+  PlayMusicStream(epicMusic);
+  SetMusicVolume(epicMusic,0.5f);
 
   Image OriginalGeorge = LoadImage("./assets/George.jpg");
   Image George = ImageCopy(OriginalGeorge);
@@ -64,6 +69,7 @@ int main(void) {
 
   // main game loop
   while (!WindowShouldClose()) {
+    UpdateMusicStream(epicMusic);
     // restart player position
     if (IsKeyPressed(KEY_R)) {
       player.x = playerX_start;
@@ -129,6 +135,8 @@ int main(void) {
     
   }
   UnloadTexture(texture);
+  UnloadMusicStream(epicMusic);
+  CloseAudioDevice();
   CloseWindow();
   return 0;
 }
