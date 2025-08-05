@@ -10,8 +10,19 @@ int main(void) {
   const int screenWidth = 800;
   const int screenHeight = 450;
   const int target_fps = 60;
+  const int playerSize = 50;
 
-  InitWindow(screenWidth, screenHeight, "nepe");
+
+  InitWindow(screenWidth, screenHeight, "Testing");
+
+  Image OriginalGeorge = LoadImage("./assets/George.jpg");
+  Image George = ImageCopy(OriginalGeorge);
+  
+  ImageResize(&George,playerSize,playerSize);
+  ExportImage(George,"GeorgeResized.png");
+  
+  Texture2D texture = LoadTextureFromImage(George);
+  UnloadImage(George);
 
   // fps init
   SetTargetFPS(target_fps);
@@ -29,7 +40,7 @@ int main(void) {
   const Rectangle ground1 = {groundX, groundY, groundWidth, groundHeight};
 
   // player init
-  const int playerSize = 50;
+  
   float playerX_start = screenWidth / 2.0f;
   float playerY_start = ground1.y - playerSize;
   const int playerSpeed = 10;
@@ -43,8 +54,7 @@ int main(void) {
   // player camera init
   Camera2D pcam = {0};
   // center the camera on the player
-  pcam.target =
-      Vector2{player.x + player.width * 0.5f, player.y + player.height * 0.5f};
+  pcam.target = Vector2{player.x + player.width * 0.5f, player.y + player.height * 0.5f};
 
   // offset the camera so the player appears in the middle of the screen
   pcam.offset = Vector2{screenWidth * 0.5f, screenHeight * 0.5f};
@@ -113,10 +123,12 @@ int main(void) {
 
     // player render
     DrawRectangleRec(player, BLUE);
+    DrawTexture(texture,player.x,player.y,WHITE);
     EndMode2D();
     EndDrawing();
+    
   }
-
+  UnloadTexture(texture);
   CloseWindow();
   return 0;
 }
