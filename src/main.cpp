@@ -1,29 +1,27 @@
 #include "raylib.h"
-#include <iostream>
+#include "rlgl.h"
 #include <math.h>
 #include <stdlib.h>
 
 int main(void) {
-  std::cout << "Hello World!" << std::endl;
-
   // screen init
   const int screenWidth = 800;
   const int screenHeight = 450;
   const int target_fps = 60;
   const int playerSize = 50;
 
-  InitWindow(screenWidth, screenHeight, "Testing");
+  InitWindow(screenWidth, screenHeight, "Top Down View");
   InitAudioDevice();
 
-  Music epicMusic = LoadMusicStream("./assets/Megalovania.ogg");
+  Music epicMusic = LoadMusicStream("./assets/audio/music/Megalovania.ogg");
   PlayMusicStream(epicMusic);
   SetMusicVolume(epicMusic, 0.5f);
 
-  Image OriginalGeorge = LoadImage("./assets/George.jpg");
+  Image OriginalGeorge = LoadImage("./assets/sprites/George.jpg");
   Image George = ImageCopy(OriginalGeorge);
 
   ImageResize(&George, playerSize, playerSize);
-  ExportImage(George, "GeorgeResized.png");
+  ExportImage(George, "./assets/sprites/GeorgeResized.png");
 
   Texture2D texture = LoadTextureFromImage(George);
   UnloadImage(George);
@@ -32,28 +30,28 @@ int main(void) {
   SetTargetFPS(target_fps);
 
   // world params
-  const float gravity = 1.f;
-  float playerY_vel = 0.0f;
+  // const float gravity = 1.f;
+  // float playerY_vel = 0.0f;
 
   // ground init
-  const float groundX = 0.0f;
-  const float groundY = 350.0f;
-  const float groundWidth = screenWidth * 5;
-  const float groundHeight = screenHeight;
+  // const float groundX = 0.0f;
+  // const float groundY = 350.0f;
+  // const float groundWidth = screenWidth * 5;
+  // const float groundHeight = screenHeight;
 
-  const Rectangle ground1 = {groundX, groundY, groundWidth, groundHeight};
+  // const Rectangle ground1 = {groundX, groundY, groundWidth, groundHeight};
 
   // player init
 
   float playerX_start = screenWidth / 2.0f;
-  float playerY_start = ground1.y - playerSize;
+  float playerY_start = screenHeight / 2.0f;
   const int playerSpeed = 10;
-  const float jumpStrength = -15.0f;
+  // const float jumpStrength = -15.0f;
 
   Rectangle player = {playerX_start, playerY_start, playerSize, playerSize};
 
   // player states
-  bool onGround = false;
+  // bool onGround = false;
 
   // player camera init
   Camera2D pcam = {0};
@@ -69,7 +67,9 @@ int main(void) {
 
   // main game loop
   while (!WindowShouldClose()) {
-    UpdateMusicStream(epicMusic);
+    if (!IsKeyPressed(KEY_M))
+      UpdateMusicStream(epicMusic);
+
     // restart player position
     if (IsKeyPressed(KEY_R)) {
       player.x = playerX_start;
@@ -77,30 +77,68 @@ int main(void) {
     }
 
     // player gravity
-    if (!onGround)
-      playerY_vel += gravity;
-    player.y += playerY_vel;
+    // if (!onGround)
+    //   playerY_vel += gravity;
+    // player.y += playerY_vel;
 
+    /*
+     * Need:
+     * 	- Mouse input
+     * 	- Player rotate to mouse pos
+     * 	- Player move according to rotation
+     * 	- Allow for relative "diagonal" movement
+     * Extra:
+     * 	- Zoom in/out with scroll wheel a limited amount
+     */
+
+    // player diagonal movemenet
+    if ((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) &&
+        (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))) {
+      // up and right
+      player.x += playerSpeed;
+      player.y -= playerSpeed;
+    } else if ((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) &&
+               (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))) {
+      // up and left
+      player.x -= playerSpeed;
+      player.y -= playerSpeed;
+
+    } else if ((IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) &&
+               (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))) {
+      // down and right
+      player.x += playerSpeed;
+      player.y += playerSpeed;
+    } else if ((IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) &&
+               (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))) {
+      // down and left
+      player.x -= playerSpeed;
+      player.y += playerSpeed;
+    }
     // player horizontal movement
-    if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+    else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
       player.x += playerSpeed;
     else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
       player.x -= playerSpeed;
+    // player vertical movement
+    else if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
+      player.y -= playerSpeed;
+    else if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
+      player.y += playerSpeed;
 
     // player jump
-    if (onGround && IsKeyPressed(KEY_SPACE)) {
-      playerY_vel = jumpStrength;
-      onGround = false;
-    }
+    // if (onGround && IsKeyPressed(KEY_SPACE)) {
+    //   playerY_vel = jumpStrength;
+    //   onGround = false;
+    // }
 
     // collision check
-    if (CheckCollisionRecs(player, ground1)) {
-      player.y = ground1.y - player.height;
-      playerY_vel = 0.0f;
-      onGround = true;
-    } else {
-      onGround = false;
-    }
+    // if (CheckCollisionRecs(player, ground1)) {
+    //   player.y = ground1.y - player.height;
+    //   playerY_vel = 0.0f;
+    //   onGround = true;
+    // } else {
+    //   onGround = false;
+    // }
 
     // follow player
 
@@ -113,13 +151,25 @@ int main(void) {
     // background render
     ClearBackground(RAYWHITE);
 
+    BeginMode2D(pcam);
+
+    rlPushMatrix();
+    rlTranslatef(0, 25 * 50, 0);
+    rlRotatef(90, 1, 0, 0);
+    DrawGrid(100, 50);
+    rlPopMatrix();
+    // player render
+    DrawRectangleRec(player, BLUE);
+    DrawTexture(texture, player.x, player.y, WHITE);
+
+    EndMode2D();
+
     // render player coords
-    // Render player coordinates
     DrawTextEx(GetFontDefault(),
                TextFormat("Player Coords: [%.0f, %.0f]", player.x, player.y),
                Vector2{10.0f, 10.0f}, 20.0f, 2.0f, BLACK);
 
-    // Render FPS
+    // render FPS
     DrawTextEx(GetFontDefault(), TextFormat("FPS: %d", GetFPS()),
                Vector2{10.0f, 40.0f}, 20.0f, 2.0f, BLACK);
 
@@ -129,70 +179,11 @@ int main(void) {
     pcam.rotation = 0.0f;
     pcam.zoom = 1.0f;
 
-    // main game loop
-    while (!WindowShouldClose()) {
-      // restart player position
-      if (IsKeyPressed(KEY_R)) {
-        player.x = playerX_start;
-        player.y = playerY_start;
-      }
-
-      // player gravity
-      if (!onGround)
-        playerY_vel += gravity;
-      player.y += playerY_vel;
-
-      // player horizontal movement
-      if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
-        player.x += playerSpeed;
-      else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
-        player.x -= playerSpeed;
-
-      // player jump
-      if (onGround && IsKeyPressed(KEY_SPACE)) {
-        playerY_vel = jumpStrength;
-        onGround = false;
-      }
-
-      // collision check
-      if (CheckCollisionRecs(player, ground1)) {
-        player.y = ground1.y - player.height;
-        playerY_vel = 0.0f;
-        onGround = true;
-      } else {
-        onGround = false;
-      }
-
-      // follow player
-      pcam.target = (Vector2){player.x + player.width / 2.0f,
-                              player.y + player.height / 2.0f};
-
-      // rendering
-      BeginDrawing();
-      // background render
-      ClearBackground(RAYWHITE);
-
-      // render player coords
-      DrawTextEx(GetFontDefault(),
-                 TextFormat("Player Coords: [%.0f, %.0f]", player.x, player.y),
-                 (Vector2){10, 10}, 20, 2, BLACK);
-      // render fps
-      DrawTextEx(GetFontDefault(), TextFormat("FPS: %i", GetFPS()),
-                 (Vector2){10, 40}, 20, 2, BLACK);
-      BeginMode2D(pcam);
-      // ground drawn
-      DrawRectangleRec(ground1, DARKGREEN);
-
-      // player render
-      DrawRectangleRec(player, BLUE);
-      DrawTexture(texture, player.x, player.y, WHITE);
-      EndMode2D();
-      EndDrawing();
-    }
-    UnloadTexture(texture);
-    UnloadMusicStream(epicMusic);
-    CloseAudioDevice();
-    CloseWindow();
-    return 0;
+    EndDrawing();
   }
+  UnloadTexture(texture);
+  UnloadMusicStream(epicMusic);
+  CloseAudioDevice();
+  CloseWindow();
+  return 0;
 }
