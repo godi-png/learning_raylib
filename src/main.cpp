@@ -1,198 +1,100 @@
 #include "raylib.h"
+#include "constants.h"
+#include "Player.h"
 #include <iostream>
-#include <math.h>
-#include <stdlib.h>
 
-int main(void) {
-  std::cout << "Hello World!" << std::endl;
+int main() {
+    Player p;
 
-  // screen init
-  const int screenWidth = 800;
-  const int screenHeight = 450;
-  const int target_fps = 60;
-  const int playerSize = 50;
+    InitWindow(cfg::window::WIDTH, cfg::window::HEIGHT, cfg::window::TITLE);
+    InitAudioDevice();
+    SetTargetFPS(cfg::window::TARGET_FPS);
 
-  InitWindow(screenWidth, screenHeight, "Testing");
-  InitAudioDevice();
 
-  Music epicMusic = LoadMusicStream("./assets/Megalovania.ogg");
-  PlayMusicStream(epicMusic);
-  SetMusicVolume(epicMusic, 0.5f);
+    Music epicMusic = LoadMusicStream(cfg::asset::MUSIC);
+    PlayMusicStream(epicMusic);
 
-  Image OriginalGeorge = LoadImage("./assets/George.jpg");
-  Image George = ImageCopy(OriginalGeorge);
+    
+    Image img = LoadImage(cfg::asset::GEORGEIMG);
+    ImageResize(&img, cfg::player::SIZE, cfg::player::SIZE);
+    Texture2D texture = LoadTextureFromImage(img);
+    UnloadImage(img);
 
-  ImageResize(&George, playerSize, playerSize);
-  ExportImage(George, "GeorgeResized.png");
+    
+    const float gravity = cfg::world::GRAVITY;
+    const Rectangle ground = { 0.0f, cfg::world::GROUND_Y, cfg::window::WIDTH * 5.0f,cfg::window::HEIGHT * 1.0f };
 
-  Texture2D texture = LoadTextureFromImage(George);
-  UnloadImage(George);
+    
+    Rectangle player = {
+        cfg::window::WIDTH * 0.5f - cfg::player::SIZE * 0.5f,
+        ground.y - cfg::player::SIZE,
+        static_cast<float>(cfg::player::SIZE),
+        static_cast<float>(cfg::player::SIZE)
+    };
+    Vector2 velocity{0.0f, 0.0f};
+    const float moveSpeed = cfg::player::SPEED.x;   // pixels per frame
+    const float jumpStrength = -15.0f;              // negative = up
+    bool onGround = true;
 
-  // fps init
-  SetTargetFPS(target_fps);
+  
+    Camera2D cam{};
+    cam.offset   = { cfg::window::WIDTH * 0.5f, cfg::window::HEIGHT * 0.5f };
+    cam.target   = { player.x + player.width * 0.5f, player.y + player.height * 0.5f };
+    cam.rotation = 0.0f;
+    cam.zoom     = 1.0f;
 
-  // world params
-  const float gravity = 1.f;
-  float playerY_vel = 0.0f;
-
-  // ground init
-  const float groundX = 0.0f;
-  const float groundY = 350.0f;
-  const float groundWidth = screenWidth * 5;
-  const float groundHeight = screenHeight;
-
-  const Rectangle ground1 = {groundX, groundY, groundWidth, groundHeight};
-
-  // player init
-
-  float playerX_start = screenWidth / 2.0f;
-  float playerY_start = ground1.y - playerSize;
-  const int playerSpeed = 10;
-  const float jumpStrength = -15.0f;
-
-  Rectangle player = {playerX_start, playerY_start, playerSize, playerSize};
-
-  // player states
-  bool onGround = false;
-
-  // player camera init
-  Camera2D pcam = {0};
-  // center the camera on the player
-  pcam.target =
-      Vector2{player.x + player.width * 0.5f, player.y + player.height * 0.5f};
-
-  // offset the camera so the player appears in the middle of the screen
-  pcam.offset = Vector2{screenWidth * 0.5f, screenHeight * 0.5f};
-
-  pcam.rotation = 0.0f;
-  pcam.zoom = 1.0f;
-
-  // main game loop
-  while (!WindowShouldClose()) {
-    UpdateMusicStream(epicMusic);
-    // restart player position
-    if (IsKeyPressed(KEY_R)) {
-      player.x = playerX_start;
-      player.y = playerY_start;
-    }
-
-    // player gravity
-    if (!onGround)
-      playerY_vel += gravity;
-    player.y += playerY_vel;
-
-    // player horizontal movement
-    if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
-      player.x += playerSpeed;
-    else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
-      player.x -= playerSpeed;
-
-    // player jump
-    if (onGround && IsKeyPressed(KEY_SPACE)) {
-      playerY_vel = jumpStrength;
-      onGround = false;
-    }
-
-    // collision check
-    if (CheckCollisionRecs(player, ground1)) {
-      player.y = ground1.y - player.height;
-      playerY_vel = 0.0f;
-      onGround = true;
-    } else {
-      onGround = false;
-    }
-
-    // follow player
-
-    pcam.target = {player.x + player.width / 2.0f,
-                   player.y + player.height / 2.0f};
-
-    // rendering
-    BeginDrawing();
-
-    // background render
-    ClearBackground(RAYWHITE);
-
-    // render player coords
-    // Render player coordinates
-    DrawTextEx(GetFontDefault(),
-               TextFormat("Player Coords: [%.0f, %.0f]", player.x, player.y),
-               Vector2{10.0f, 10.0f}, 20.0f, 2.0f, BLACK);
-
-    // Render FPS
-    DrawTextEx(GetFontDefault(), TextFormat("FPS: %d", GetFPS()),
-               Vector2{10.0f, 40.0f}, 20.0f, 2.0f, BLACK);
-
-    pcam.target = (Vector2){player.x + player.width / 2.0f,
-                            player.y + player.height / 2.0f};
-    pcam.offset = (Vector2){screenWidth / 2.0f, screenHeight / 2.0f};
-    pcam.rotation = 0.0f;
-    pcam.zoom = 1.0f;
-
-    // main game loop
+   
     while (!WindowShouldClose()) {
-      // restart player position
-      if (IsKeyPressed(KEY_R)) {
-        player.x = playerX_start;
-        player.y = playerY_start;
-      }
+        // Update audio
+        UpdateMusicStream(epicMusic);
 
-      // player gravity
-      if (!onGround)
-        playerY_vel += gravity;
-      player.y += playerY_vel;
+        // -------- Update --------
+        // Horizontal input
+        if (IsKeyDown(KEY_D)) velocity.x += moveSpeed;
+        if (IsKeyDown(KEY_A)) velocity.x -= moveSpeed;
 
-      // player horizontal movement
-      if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
-        player.x += playerSpeed;
-      else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
-        player.x -= playerSpeed;
+        // Jump
+        if (onGround && IsKeyPressed(KEY_SPACE)) {
+            velocity.y = jumpStrength;
+            onGround = false;
+        }
+        // this does not work, I have to fix it :'v
+        p.updatePosition();
+        // Gravity
+        velocity.y += gravity;
 
-      // player jump
-      if (onGround && IsKeyPressed(KEY_SPACE)) {
-        playerY_vel = jumpStrength;
-        onGround = false;
-      }
+        // Apply movement
+        player.x += velocity.x;
+        player.y += velocity.y;
 
-      // collision check
-      if (CheckCollisionRecs(player, ground1)) {
-        player.y = ground1.y - player.height;
-        playerY_vel = 0.0f;
-        onGround = true;
-      } else {
-        onGround = false;
-      }
+        // Ground collision, this also does not work well
+        if (player.y + player.height >= ground.y) {
+            player.y = ground.y - player.height;
+            velocity.y = 0.0f;
+            onGround = true;
+        }
 
-      // follow player
-      pcam.target = (Vector2){player.x + player.width / 2.0f,
-                              player.y + player.height / 2.0f};
+        // Camera follow (center on player)
+        cam.target = { player.x + player.width * 0.5f, player.y + player.height * 0.5f };
 
-      // rendering
-      BeginDrawing();
-      // background render
-      ClearBackground(RAYWHITE);
+        // -------- Draw --------
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
 
-      // render player coords
-      DrawTextEx(GetFontDefault(),
-                 TextFormat("Player Coords: [%.0f, %.0f]", player.x, player.y),
-                 (Vector2){10, 10}, 20, 2, BLACK);
-      // render fps
-      DrawTextEx(GetFontDefault(), TextFormat("FPS: %i", GetFPS()),
-                 (Vector2){10, 40}, 20, 2, BLACK);
-      BeginMode2D(pcam);
-      // ground drawn
-      DrawRectangleRec(ground1, DARKGREEN);
+        BeginMode2D(cam);
+        DrawRectangleRec(ground, GREEN);                       // ground
+        DrawTextureV(texture, { player.x, player.y }, WHITE);      // player
+        EndMode2D();
 
-      // player render
-      DrawRectangleRec(player, BLUE);
-      DrawTexture(texture, player.x, player.y, WHITE);
-      EndMode2D();
-      EndDrawing();
+        DrawText("this shit does not have falling object support :v", 10, 10, 20, DARKGRAY);
+
+        EndDrawing();
     }
+
+    // --- De-init ---
     UnloadTexture(texture);
     UnloadMusicStream(epicMusic);
     CloseAudioDevice();
     CloseWindow();
     return 0;
-  }
 }
