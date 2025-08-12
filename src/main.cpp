@@ -13,6 +13,7 @@ int main(void) {
   InitWindow(screenWidth, screenHeight, "Top Down View");
   InitAudioDevice();
 
+  bool musicPlaying = true;
   Music epicMusic = LoadMusicStream("./assets/audio/music/Megalovania.ogg");
   PlayMusicStream(epicMusic);
   SetMusicVolume(epicMusic, 0.5f);
@@ -29,18 +30,6 @@ int main(void) {
   // fps init
   SetTargetFPS(target_fps);
 
-  // world params
-  // const float gravity = 1.f;
-  // float playerY_vel = 0.0f;
-
-  // ground init
-  // const float groundX = 0.0f;
-  // const float groundY = 350.0f;
-  // const float groundWidth = screenWidth * 5;
-  // const float groundHeight = screenHeight;
-
-  // const Rectangle ground1 = {groundX, groundY, groundWidth, groundHeight};
-
   // player init
 
   float playerX_start = screenWidth / 2.0f;
@@ -51,7 +40,6 @@ int main(void) {
   Rectangle player = {playerX_start, playerY_start, playerSize, playerSize};
 
   // player states
-  // bool onGround = false;
 
   // player camera init
   Camera2D pcam = {0};
@@ -67,8 +55,13 @@ int main(void) {
 
   // main game loop
   while (!WindowShouldClose()) {
-    if (!IsKeyPressed(KEY_M))
-      UpdateMusicStream(epicMusic);
+
+    UpdateMusicStream(epicMusic);
+    // if (IsKeyPressed(KEY_M)) {
+    //   musicPlaying = !musicPlaying;
+    //   StopMusicStream(epicMusic);
+    //   PlayMusicStream(epicMusic);
+    // }
 
     // restart player position
     if (IsKeyPressed(KEY_R)) {
@@ -153,11 +146,13 @@ int main(void) {
 
     BeginMode2D(pcam);
 
+    // render background grid
     rlPushMatrix();
     rlTranslatef(0, 25 * 50, 0);
     rlRotatef(90, 1, 0, 0);
     DrawGrid(100, 50);
     rlPopMatrix();
+
     // player render
     DrawRectangleRec(player, BLUE);
     DrawTexture(texture, player.x, player.y, WHITE);
@@ -173,9 +168,13 @@ int main(void) {
     DrawTextEx(GetFontDefault(), TextFormat("FPS: %d", GetFPS()),
                Vector2{10.0f, 40.0f}, 20.0f, 2.0f, BLACK);
 
-    pcam.target = (Vector2){player.x + player.width / 2.0f,
-                            player.y + player.height / 2.0f};
-    pcam.offset = (Vector2){screenWidth / 2.0f, screenHeight / 2.0f};
+    // render is music on?
+    // DrawTextEx(GetFontDefault(), TextFormat("Music : %s", musicPlaying),
+    // Vector2{10.0f, 60.0f}, 20.0f, 2.0f, BLACK);
+
+    pcam.target = Vector2{player.x + player.width / 2.0f,
+                          player.y + player.height / 2.0f};
+    pcam.offset = Vector2{screenWidth / 2.0f, screenHeight / 2.0f};
     pcam.rotation = 0.0f;
     pcam.zoom = 1.0f;
 
