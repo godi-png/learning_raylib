@@ -14,14 +14,13 @@ namespace cfg {
     namespace world {
         inline constexpr float GRAVITY = 1.0f;
         inline constexpr float GROUND_Y= 350.0f;
-        inline constexpr bool ON_GROUNd = false;
+        inline constexpr bool PLATFORM = true; 
 
     } // namespace 
 
     namespace player{
         inline constexpr int SIZE = 50;
         inline constexpr Vector2 START_POS = {50.0f, 50.0f};
-        inline constexpr Vector2 SPEED= { 10.0f,10.0f};
 
     }
 

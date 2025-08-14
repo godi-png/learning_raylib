@@ -8,16 +8,20 @@ private:
     static constexpr float   DEFAULT_HEALTH = 10.0f;
     static constexpr float   DEFAULT_ATTACK = 2.0f;
     static constexpr float   DEFAULT_MANA   = 2.0f;
-    static constexpr Vector2 DEFAULT_SPEED  = { 10.0f, 10.0f };
+    static constexpr Vector2 DEFAULT_VELOCITY  = { 0.0f, 0.0f };
     static constexpr float DEFAULT_JUMP = -15.0f;
-
+    static constexpr float DEFAULT_SPEED = 5.0f;
+    static constexpr bool DEFAULT_ONGROUND= true;
+  
     // runtime state
     float   health;
     float   attackDamage;
     float   mana;
-    Vector2 speed;
+    Vector2 velocity;
     Vector2 position;
     float jump;
+    float speed;
+    bool onGround;
 
     public:
     Player();
@@ -31,9 +35,18 @@ private:
     void  updateMana(float amount);
     float getMana() const;
 
-    void    updateSpeed(Vector2 delta);
-    Vector2 getSpeed() const;
+    void updateVelocity(Vector2 delta);
+    Vector2 getVelocity() const;
 
-    void    updatePosition();
+    void updateSpeed(float amount);
+    float getSpeed() const;
+
+    void updatePosition();
     Vector2 getPosition() const;
+    void updatePosition(bool platform);
+
+    void updateJump(float amount);
+    float getJump() const;
+
+
 };
